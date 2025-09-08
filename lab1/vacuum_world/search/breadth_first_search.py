@@ -41,6 +41,7 @@ class BreadthFirstSearch(BaseSearch):
         self.path = []
         self.visited = set()
         self.explored = []
+        self.frontier = deque()
         
         initial_state = problem.get_initial_state()
         current_node = SearchNode(initial_state, None, None, 0.0)
