@@ -17,14 +17,19 @@ class Random(AI):
 
 class MinMax(AI):
     @staticmethod
+    def opposite_objective(objective: Objective):
+        return Objective.MIN if objective == Objective.MAX else Objective.MAX
+
+    @staticmethod
     def best_move(current_state: State, objective: Objective):
         candidates_pits = current_state.available_moves()
         if not candidates_pits:
             return None
         next_states = [current_state.next_state(pit) for pit in candidates_pits]
-        utilities = [current_state.score() for current_state in next_states]
+        utilities = [MinMax.get_utility(current_state, MinMax.opposite_objective(objective)) for current_state in next_states]
         decider = max if objective == Objective.MAX else min
-        return decider(candidates_pits, key=lambda pit: utilities[candidates_pits.index(pit)])
+        best_move = decider(enumerate(utilities), key=lambda x: x[1])
+        return best_move[0]
     
     @staticmethod
     def get_utility(current_state: State, objective: Objective) -> float:
@@ -40,11 +45,12 @@ class MinMax(AI):
             elif victory == 1:
                 # player 1 wins
                 return -1 if objective == Objective.MAX else 1
-    
+        
+        # print(f'{objective}\'s turn, considering state: {current_state}') 
         # not finished, continue the game
         candidate_moves = current_state.available_moves()
         decider = max if objective == Objective.MAX else min
-        utilities = [MinMax.get_utility(current_state.next_state(move), objective) for move in candidate_moves]
+        utilities = [MinMax.get_utility(current_state.next_state(move), MinMax.opposite_objective(objective)) for move in candidate_moves]
         return decider(utilities)
 
 
