@@ -173,6 +173,9 @@ class State:
 
     def copy(self):
         return State(self.pits.copy(), self.current_player)
+    
+    def __str__(self):
+        return str(self.pits)
 
 
 class Player:
