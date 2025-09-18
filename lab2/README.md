@@ -32,11 +32,11 @@ is the depth-bounded algorithm?
 4. Suppose that we set the cutoﬀ to depth 1. How is that search then called?
 
 # Task3
-- [ ] Starting from the code that you wrote previously, implement MinMax with Alpha-Beta
+- [x] Starting from the code that you wrote previously, implement MinMax with Alpha-Beta
 pruning in a separate class. *assign to @wenlin*
 - [ ] Add a counter that outputs the number of branches that have been cut during search. *assign to @wenlin*
 
-# Questions
+# Questions 3
 1. When the value for the depth cutoﬀ is the same for both algorithms, how do the
 outputs of Alpha-Beta compare to the ones of MinMax? Justify.
 2. Find some dimensions of the board such that, on your machine, depth-bounded Min-
