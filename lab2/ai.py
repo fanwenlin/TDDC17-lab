@@ -61,7 +61,25 @@ class MinMax(AI):
         return decider(utilities)
 
 
-
+class Counter():
+    """
+    Counter:
+    help class for counting
+    """
+    def __init__(self):
+        self.count: int = 0
+    
+    def add(self, num=1):
+        self.count += num
+    
+    def get(self) -> int:
+        return self.count
+    
+    def __str__(self) -> str:
+        return str(self.count)
+    
+    def clear(self):
+        self.count = 0
 
 
 class AlphaBeta(AI):
@@ -80,13 +98,15 @@ class AlphaBeta(AI):
             return None
         alpha, beta = -1, 1
         utilities = []
+        counter = Counter()
         for move in candidates_pits:
             next_state = current_state.next_state(move)
-            utility = AlphaBeta.get_utility(next_state, MinMax.opposite_objective(objective), alpha, beta)
+            utility = AlphaBeta.get_utility(next_state, MinMax.opposite_objective(objective), alpha, beta, counter)
             alpha, beta = AlphaBeta.get_new_alpha_beta(alpha, beta, utility, objective)
             utilities.append(utility)
         decider = max if objective == Objective.MAX else min
         best_move = decider(enumerate(utilities), key=lambda x: x[1])
+        print(f'{objective}\'s turn, {counter} branch(es) cut')
         return best_move[0]
    
     @staticmethod
@@ -97,7 +117,7 @@ class AlphaBeta(AI):
             beta = min(beta, utility)
         return alpha, beta
     @staticmethod
-    def get_utility(current_state: State, objective: Objective, alpha: float = -1, beta: float = 1) -> float:
+    def get_utility(current_state: State, objective: Objective, alpha: float = -1, beta: float = 1, counter: Counter = Counter()) -> float:
         """
         alpha: the best utility found so far for Max, default by -1, because it will never worse by Max Lose in our case
         beta: the best utility found so far for Min, default by 1, because it will never worse by Max Win in our case
@@ -107,14 +127,20 @@ class AlphaBeta(AI):
         
         candidate_moves = current_state.available_moves()
         better = (lambda x, y: x if x > y else y) if objective == Objective.MAX else (lambda x, y: x if x < y else y)
-        for move in candidate_moves:
+        for idx, move in enumerate(candidate_moves):
             next_state = current_state.next_state(move)
-            utility = AlphaBeta.get_utility(next_state, MinMax.opposite_objective(objective), alpha, beta)
+            utility = AlphaBeta.get_utility(next_state, MinMax.opposite_objective(objective), alpha, beta, counter)
             if objective == Objective.MAX:
                 alpha = better(alpha, utility)
             else:
                 beta = better(beta, utility)
+            # pruning
+            # we found a optimal path that can make this branch worse enough that our opponent won't adopt this branch.
+            # so that we can return early
             if alpha >= beta:
+                # number of cut branches
+                # print(f'Cut branches: {len(candidate_moves) - idx - 1}')
+                counter.add(len(candidate_moves) - idx - 1)
                 return utility
         
         return alpha if objective == Objective.MAX else beta
