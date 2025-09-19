@@ -34,7 +34,7 @@ is the depth-bounded algorithm?
 # Task3
 - [x] Starting from the code that you wrote previously, implement MinMax with Alpha-Beta
 pruning in a separate class. *assign to @wenlin*
-- [ ] Add a counter that outputs the number of branches that have been cut during search. *assign to @wenlin*
+- [x] Add a counter that outputs the number of branches that have been cut during search. *assign to @wenlin*
 
 # Questions 3
 1. When the value for the depth cutoﬀ is the same for both algorithms, how do the
