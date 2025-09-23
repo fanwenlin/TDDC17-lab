@@ -4,6 +4,25 @@ from typing import Union
 from game import AI, State, Objective
 
 
+class Counter():
+    """
+    Counter:
+    help class for counting
+    """
+    def __init__(self):
+        self.count: int = 0
+    
+    def add(self, num=1):
+        self.count += num
+    
+    def get(self) -> int:
+        return self.count
+    
+    def __str__(self) -> str:
+        return str(self.count)
+    
+    def clear(self):
+        self.count = 0
 class Random(AI):
     @staticmethod
     def best_move(current_state: State, objective: Objective):
@@ -26,10 +45,12 @@ class MinMax(AI):
         candidates_pits = current_state.available_moves()
         if not candidates_pits:
             return None
+        counter = Counter()
         next_states = [current_state.next_state(pit) for pit in candidates_pits]
-        utilities = [MinMax.get_utility(current_state, MinMax.opposite_objective(objective)) for current_state in next_states]
+        utilities = [MinMax.get_utility(current_state, MinMax.opposite_objective(objective), counter) for current_state in next_states]
         decider = max if objective == Objective.MAX else min
         best_move = decider(enumerate(utilities), key=lambda x: x[1])
+        print(f'{objective}\'s turn, {counter} states expanded')
         return best_move[0]
     
     @staticmethod
@@ -49,37 +70,22 @@ class MinMax(AI):
         return None
     
     @staticmethod
-    def get_utility(current_state: State, objective: Objective) -> float:
-        if result := MinMax.check_victory(current_state, objective):
+    def get_utility(current_state: State, objective: Objective, counter: Counter = Counter()) -> float:
+        counter.add(1)
+        result = MinMax.check_victory(current_state, objective)
+        if result is not None:  
             return result
         
-        # print(f'{objective}\'s turn, considering state: {current_state}') 
-        # not finished, continue the game
         candidate_moves = current_state.available_moves()
+        if len(candidate_moves) == 0:
+            print(f'No moves available, state: {current_state}, check_victory: {MinMax.check_victory(current_state, objective)}')
+            return 0
         decider = max if objective == Objective.MAX else min
-        utilities = [MinMax.get_utility(current_state.next_state(move), MinMax.opposite_objective(objective)) for move in candidate_moves]
+        utilities = [MinMax.get_utility(current_state.next_state(move), MinMax.opposite_objective(objective), counter) for move in candidate_moves]
+        # print(f'{objective}\'s turn, considering state: {current_state}, utilities: {utilities}')
         return decider(utilities)
 
 
-class Counter():
-    """
-    Counter:
-    help class for counting
-    """
-    def __init__(self):
-        self.count: int = 0
-    
-    def add(self, num=1):
-        self.count += num
-    
-    def get(self) -> int:
-        return self.count
-    
-    def __str__(self) -> str:
-        return str(self.count)
-    
-    def clear(self):
-        self.count = 0
 
 
 class AlphaBeta(AI):
