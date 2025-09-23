@@ -86,6 +86,60 @@ class MinMax(AI):
         return decider(utilities)
 
 
+MAX_DEPTH = 8
+class DepthMinMax(AI):
+
+    @staticmethod
+    def best_move(current_state: State, objective: Objective):
+        candidates_pits = current_state.available_moves()
+        if not candidates_pits:
+            return None
+        counter = Counter()
+        next_states = [current_state.next_state(pit) for pit in candidates_pits]
+        utilities = [DepthMinMax.get_utility(current_state, MinMax.opposite_objective(objective), 1, counter) for current_state in next_states]
+        decider = max if objective == Objective.MAX else min
+        best_move = decider(enumerate(utilities), key=lambda x: x[1])
+        print(f'{objective}\'s turn, {counter} states expanded')
+        return best_move[0]
+    
+    @staticmethod
+    def check_victory(current_state: State, objective: Objective) -> Union[None, float]:
+        victory = current_state.check_victory()
+        if victory is not None:
+            # finished
+            if victory == -1:
+                # tie 
+                return 0
+            elif victory == 0:
+                # player 0 wins
+                return 1 if objective == Objective.MAX else -1
+            elif victory == 1:
+                # player 1 wins
+                return -1 if objective == Objective.MAX else 1
+        return None
+    
+    @staticmethod
+    def get_utility(current_state: State, objective: Objective, depth: int = 0, counter: Counter = Counter()) -> float:
+        counter.add(1)
+        result = MinMax.check_victory(current_state, objective)
+        if result is not None:  
+            return result
+        
+        # not ended, but deep enough
+        if depth >= MAX_DEPTH: 
+            return current_state.score
+        
+        candidate_moves = current_state.available_moves()
+        if len(candidate_moves) == 0:
+            print(f'No moves available, state: {current_state}, check_victory: {MinMax.check_victory(current_state, objective)}')
+            return 0
+        decider = max if objective == Objective.MAX else min
+        utilities = [DepthMinMax.get_utility(current_state.next_state(move), MinMax.opposite_objective(objective), depth + 1, counter) for move in candidate_moves]
+        # print(f'{objective}\'s turn, considering state: {current_state}, utilities: {utilities}')
+        return decider(utilities)
+
+
+
 
 
 class AlphaBeta(AI):

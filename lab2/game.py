@@ -24,8 +24,14 @@ class State:
 
     @property
     def score(self) -> int:
-        # TODO: Complete this method
-        return 0
+        player_0_score = self.pits[PLAYER_0_STORE]
+        player_1_score = self.pits[PLAYER_1_STORE]
+        if player_0_score == player_1_score:
+            return 0
+        elif player_0_score > player_1_score:
+            return 1
+        elif player_0_score < player_1_score:
+            return -1
 
     def next_state(self, pit):
         """
