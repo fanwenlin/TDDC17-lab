@@ -1,3 +1,4 @@
+import math
 import random
 from typing import Tuple, Union
 
@@ -171,16 +172,16 @@ class AlphaBeta(AI):
             return None
         alpha, beta = -1, 1
         utilities = []
-        counter = Counter()
+        branch_cut_counter, node_expanded_counter = Counter(), Counter()
         for move in candidates_pits:
             next_state, next_objective = MinMax.next_state_and_objective(current_state, move, objective)
-            utility = AlphaBeta.get_utility(next_state, next_objective, alpha, beta, counter)
+            utility = AlphaBeta.get_utility(next_state, next_objective, alpha, beta, 1, branch_cut_counter, node_expanded_counter)
             alpha, beta = AlphaBeta.get_new_alpha_beta(alpha, beta, utility, objective)
             utilities.append(utility)
         decider = max if objective == Objective.MAX else min
         best_move = decider(enumerate(utilities), key=lambda x: x[1])
-        print(f'{objective}\'s turn, {counter} branch(es) cut')
-        return best_move[0]
+        print(f'{objective}\'s turn, {branch_cut_counter} branch(es) cut, nodes expanded: {node_expanded_counter}')
+        return candidates_pits[best_move[0]]
    
     @staticmethod
     def get_new_alpha_beta(alpha: float, beta: float, utility: float, objective: Objective) -> tuple[float, float]:
@@ -190,19 +191,24 @@ class AlphaBeta(AI):
             beta = min(beta, utility)
         return alpha, beta
     @staticmethod
-    def get_utility(current_state: State, objective: Objective, alpha: float = -1, beta: float = 1, counter: Counter = Counter()) -> float:
+    def get_utility(current_state: State, objective: Objective, alpha: float = -1, beta: float = 1, depth:int = 0, branch_cut_counter: Counter = Counter(), node_expanded_counter: Counter = Counter()) -> float:
         """
         alpha: the best utility found so far for Max, default by -1, because it will never worse by Max Lose in our case
         beta: the best utility found so far for Min, default by 1, because it will never worse by Max Win in our case
         """
-        if result := MinMax.check_victory(current_state, objective):
+        node_expanded_counter.add(1)
+        result = MinMax.check_victory(current_state, objective)
+        if result != None:
             return result
+
+        if depth >= MAX_DEPTH: 
+            return current_state.score
         
         candidate_moves = current_state.available_moves()
         better = (lambda x, y: x if x > y else y) if objective == Objective.MAX else (lambda x, y: x if x < y else y)
         for idx, move in enumerate(candidate_moves):
             next_state = current_state.next_state(move)
-            utility = AlphaBeta.get_utility(next_state, MinMax.opposite_objective(objective), alpha, beta, counter)
+            utility = AlphaBeta.get_utility(next_state, MinMax.opposite_objective(objective), alpha, beta, depth+1, branch_cut_counter, node_expanded_counter)
             if objective == Objective.MAX:
                 alpha = better(alpha, utility)
             else:
@@ -213,7 +219,7 @@ class AlphaBeta(AI):
             if alpha >= beta:
                 # number of cut branches
                 # print(f'Cut branches: {len(candidate_moves) - idx - 1}')
-                counter.add(len(candidate_moves) - idx - 1)
+                branch_cut_counter.add(len(candidate_moves) - idx - 1)
                 return utility
         
         return alpha if objective == Objective.MAX else beta
