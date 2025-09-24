@@ -4,7 +4,6 @@ from typing import Tuple, Union
 
 from game import AI, State, Objective
 
-
 class Counter():
     """
     Counter:
@@ -24,6 +23,7 @@ class Counter():
     
     def clear(self):
         self.count = 0
+
 class Random(AI):
     @staticmethod
     def best_move(current_state: State, objective: Objective):
@@ -33,7 +33,10 @@ class Random(AI):
         if not available_moves:
             return None
 
-        return random.choice(available_moves)
+        choice = random.choice(available_moves)
+        # print(f'\n{objective}\'s turn')
+        # print(f'current state: {current_state}, available moves: {available_moves}, random move: {choice}')
+        return choice
 
 
 class MinMax(AI):
@@ -51,16 +54,17 @@ class MinMax(AI):
 
     @staticmethod
     def best_move(current_state: State, objective: Objective):
+        saved_visited = {}
         candidates_pits = current_state.available_moves()
         if not candidates_pits:
             return None
         counter = Counter()
         next_states_and_objectives = [MinMax.next_state_and_objective(current_state, pit, objective) for pit in candidates_pits]
-        utilities = [MinMax.get_utility(state, objective, counter) for state, objective in next_states_and_objectives]
+        utilities = [MinMax.get_utility(state, objective, counter, saved_visited) for state, objective in next_states_and_objectives]
         decider = max if objective == Objective.MAX else min
         best_move = decider(enumerate(utilities), key=lambda x: x[1])
-        print(f'{objective}\'s turn, {counter} states expanded')
-        print(f'current state: {current_state}, available moves: {candidates_pits}')
+        print(f'\n{objective}\'s turn, {counter} states expanded')
+        print(f'current state: {current_state}, available moves: {candidates_pits}, utilities: {utilities}, best move: {candidates_pits[best_move[0]]}')
         return candidates_pits[best_move[0]]
     
     @staticmethod
@@ -73,17 +77,45 @@ class MinMax(AI):
                 return 0
             elif victory == 0:
                 # player 0 wins
-                return 1 if objective == Objective.MAX else -1
+                return 1 
             elif victory == 1:
                 # player 1 wins
-                return -1 if objective == Objective.MAX else 1
+                return -1 
         return None
     
     @staticmethod
-    def get_utility(current_state: State, objective: Objective, counter: Counter = Counter()) -> float:
+    def visited(current_state: State, objective: Objective, saved_visited: dict) -> bool:
+        return str(current_state)+'|'+str(objective) in saved_visited
+    
+    @staticmethod
+    def mark_visiting(current_state: State, objective: Objective, saved_visited: dict):
+        saved_visited[str(current_state)+'|'+str(objective)] = None
+    
+    @staticmethod
+    def mark_visited(current_state: State, objective: Objective, saved_visited: dict, value: float):
+        saved_visited[str(current_state)+'|'+str(objective)] = value
+    
+    @staticmethod
+    def get_visited_value(current_state: State, objective: Objective, saved_visited: dict) -> Union[None, float]:
+        return saved_visited[str(current_state)+'|'+str(objective)]
+    
+    @staticmethod
+    def get_utility(current_state: State, objective: Objective, counter: Counter = Counter(), saved_visited: dict = {}) -> float:
+        if MinMax.visited(current_state, objective, saved_visited):
+            # print(f'Visited state: {current_state}')
+            visited_value = MinMax.get_visited_value(current_state, objective, saved_visited)
+            if visited_value is not None:
+                return visited_value
+            # circular path, return 0
+            # print(f'Circular path, state: {current_state}')
+            return 0
+
+        MinMax.mark_visiting(current_state, objective, saved_visited)
         counter.add(1)
         result = MinMax.check_victory(current_state, objective)
         if result is not None:  
+            MinMax.mark_visited(current_state, objective, saved_visited, result)
+            # print(f'Victory, state: {current_state}, objective: {objective}, result: {result}')
             return result
         
         candidate_moves = current_state.available_moves()
@@ -92,10 +124,12 @@ class MinMax(AI):
             return 0
         decider = max if objective == Objective.MAX else min
         next_states_and_objectives = [MinMax.next_state_and_objective(current_state, move, objective) for move in candidate_moves]
-        utilities = [MinMax.get_utility(state, objective, counter) for (state, objective) in next_states_and_objectives]
+        utilities = [MinMax.get_utility(state, objective, counter, saved_visited) for (state, objective) in next_states_and_objectives]
         # if counter.get() % 100000 == 0:
         #     print(f'{counter} {objective}\'s turn, considering state: {current_state}, available moves: {candidate_moves}, utilities: {utilities}')
-        return decider(utilities)
+        result = decider(utilities)
+        MinMax.mark_visited(current_state, objective, saved_visited, result)
+        return result
 
 
 MAX_DEPTH = 8
@@ -111,8 +145,8 @@ class DepthMinMax(AI):
         utilities = [DepthMinMax.get_utility(state, objective, 1, counter) for state, objective in next_states_and_objectives]
         decider = max if objective == Objective.MAX else min
         best_move = decider(enumerate(utilities), key=lambda x: x[1])
-        print(f'{objective}\'s turn, {counter} states expanded')
-        print(f'current state: {current_state}, available moves: {candidates_pits}')
+        # print(f'{objective}\'s turn, {counter} states expanded')
+        # print(f'current state: {current_state}, available moves: {candidates_pits}')
         return candidates_pits[best_move[0]]
     
     @staticmethod
