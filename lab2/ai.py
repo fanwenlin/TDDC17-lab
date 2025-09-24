@@ -132,7 +132,7 @@ class MinMax(AI):
         return result
 
 
-MAX_DEPTH = 8
+MAX_DEPTH = 3
 class DepthMinMax(AI):
 
     @staticmethod
@@ -148,22 +148,6 @@ class DepthMinMax(AI):
         # print(f'{objective}\'s turn, {counter} states expanded')
         # print(f'current state: {current_state}, available moves: {candidates_pits}')
         return candidates_pits[best_move[0]]
-    
-    @staticmethod
-    def check_victory(current_state: State, objective: Objective) -> Union[None, float]:
-        victory = current_state.check_victory()
-        if victory is not None:
-            # finished
-            if victory == -1:
-                # tie 
-                return 0
-            elif victory == 0:
-                # player 0 wins
-                return 1 if objective == Objective.MAX else -1
-            elif victory == 1:
-                # player 1 wins
-                return -1 if objective == Objective.MAX else 1
-        return None
     
     @staticmethod
     def get_utility(current_state: State, objective: Objective, depth: int = 0, counter: Counter = Counter()) -> float:
