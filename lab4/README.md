@@ -14,14 +14,14 @@ The owner asks you to start experimenting with the network and find out how safe
 
    - a) What is the risk of melt-down in the power plant during a day if no observations have been made? What if there is icy weather?
      - 0.02578 if no observations; 0.03472 with icy weather
-     - ![Screenshot 2025-09-30 at 16.46.41](/Users/fwl/src/tddc17/lab4/assets/Screenshot 2025-09-30 at 16.46.41.png)
-     - ![Screenshot 2025-09-30 at 16.53.57](/Users/fwl/src/tddc17/lab4/assets/Screenshot 2025-09-30 at 16.53.57.png)
+     - ![Screenshot 2025-09-30 at 16.46.41](assets/Screenshot 2025-09-30 at 16.46.41.png)
+     - ![Screenshot 2025-09-30 at 16.53.57](assets/Screenshot 2025-09-30 at 16.53.57.png)
    - b) Suppose that both warning sensors indicate failure. What is the risk of a meltdown in that case? Compare this result with the risk of a melt-down when there is an actual pump failure and water leak. What is the difference? The answers must be expressed as conditional probabilities of the observed variables, P(Meltdown|...).
      - $P(Meltdown|PumpFailureWarning, WaterLeakWarning) = 0.14535$
      - $P(Meltdown|PumpFailure,WaterLeak) = 0.2$
      - Given both warning sensors indicated failure, the risk of a meil-down is relatively lower compared to the case given actual pump failure and water leak.
-     - ![Screenshot 2025-09-30 at 16.47.28](/Users/fwl/src/tddc17/lab4/assets/Screenshot 2025-09-30 at 16.47.28.png)
-     - ![Screenshot 2025-09-30 at 16.49.18](/Users/fwl/src/tddc17/lab4/assets/Screenshot 2025-09-30 at 16.49.18.png)
+     - ![Screenshot 2025-09-30 at 16.47.28](assets/Screenshot 2025-09-30 at 16.47.28.png)
+     - ![Screenshot 2025-09-30 at 16.49.18](assets/Screenshot 2025-09-30 at 16.49.18.png)
    - c) The conditional probabilities for the stochastic variables are often estimated by repeated experiments or observations. Why is it sometimes very difficult to get accurate numbers for these? What conditional probabilites in the model of the plant do you think are difficult or impossible to estimate?
      - Some events with unacceptable consequences are hard to get through actual experiments.
      - Prior probability sometimes is to small to measure. The confidence intervals are broad.
